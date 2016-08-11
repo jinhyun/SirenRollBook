@@ -5,6 +5,9 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class DbHelper extends SQLiteOpenHelper {
 
     // DBHelper 생성자로 관리할 DB 이름과 버전 정보를 받음
@@ -14,8 +17,8 @@ public class DbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE ATTEND " +
-                "(_id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT, password TEXT);");
+        db.execSQL("CREATE TABLE USER " +
+                "(uid INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT, password TEXT);");
     }
 
     // DB 업그레이드를 위해 버전이 변경될 때 호출되는 함수
@@ -26,7 +29,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
     public void insert(String userName, String userEmail, String userPassword) {
         SQLiteDatabase db = getWritableDatabase();
-        db.execSQL("INSERT INTO ATTEND VALUES(null, '" + userName + "', '" + userEmail + "', '" + userPassword + "');");
+        db.execSQL("INSERT INTO USER VALUES(null, '" + userName + "', '" + userEmail + "', '" + userPassword + "');");
         db.close();
     }
 
@@ -34,7 +37,7 @@ public class DbHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = getReadableDatabase();
         String result = "";
 
-        Cursor cursor = db.rawQuery("SELECT * FROM ATTEND", null);
+        Cursor cursor = db.rawQuery("SELECT * FROM USER", null);
         while (cursor.moveToNext()) {
             result += cursor.getString(0)
                     + " : "
@@ -47,5 +50,29 @@ public class DbHelper extends SQLiteOpenHelper {
         }
 
         return result;
+    }
+
+    public List<User> getUserList() {
+        SQLiteDatabase db = getReadableDatabase();
+        List<User> userList = new ArrayList<>();
+
+        Cursor cursor = db.rawQuery("SELECT * FROM USER", null);
+        while (cursor.moveToNext()) {
+            User user = new User();
+            user.setUid(cursor.getInt(0));
+            user.setUserName(cursor.getString(1));
+            user.setUserEmail(cursor.getString(2));
+            user.setUserPassword(cursor.getString(3));
+
+            userList.add(user);
+        }
+
+        return userList;
+    }
+
+    public void deleteUser(int uid) {
+        SQLiteDatabase db = getWritableDatabase();
+        db.execSQL("DELETE FROM USER WHERE uid='" + uid + "';");
+        db.close();
     }
 }
